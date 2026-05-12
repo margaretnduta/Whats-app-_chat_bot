@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  whatsapp-chatbot:
+    build: .
+    container_name: whatsapp_chatbot
+    ports:
+      - "5000:5000"
+    environment:
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - TWILIO_WHATSAPP_NUMBER=${TWILIO_WHATSAPP_NUMBER}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - FLASK_ENV=production
+      - SECRET_KEY=${SECRET_KEY}
+      - TARGET_WEBSITE=${TARGET_WEBSITE}
+      - CACHE_EXPIRY_MINUTES=${CACHE_EXPIRY_MINUTES}
+    volumes:
+      - ./cache:/app/cache
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - whatsapp-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+networks:
+  whatsapp-network:
+    driver: bridge
+
+# Usage:
+# 1. Create .env file with all credentials
+# 2. Run: docker-compose up -d
+# 3. View logs: docker-compose logs -f
+# 4. Stop: docker-compose down
